@@ -30,6 +30,7 @@ import (
 	errorutil "k8s.io/apimachinery/pkg/util/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 const (
@@ -51,10 +52,10 @@ func (r *S2iBuilder) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // +kubebuilder:webhook:path=/mutate-devops-kubesphere-io-v1alpha1-s2ibuilder,mutating=true,failurePolicy=fail,groups=devops.kubesphere.io,resources=s2ibuilders,verbs=create;update,versions=v1alpha1,name=s2ibuilder.kb.io
 
-var _ webhook.Defaulter = &S2iBuilder{}
+var _ webhook.CustomDefaulter = &S2iBuilder{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *S2iBuilder) Default() {
+func (r *S2iBuilder) Default(ctx context.Context, obj runtime.Object) error {
 	s2ibuilderlog.Info("default", "name", r.Name)
 
 	if r.Spec.Config.RevisionId == "" {
@@ -66,15 +67,16 @@ func (r *S2iBuilder) Default() {
 	}
 
 	// TODO(user): fill in your defaulting logic.
+	return nil
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 // +kubebuilder:webhook:verbs=create;update,path=/validate-devops-kubesphere-io-v1alpha1-s2ibuilder,mutating=false,failurePolicy=fail,groups=devops.kubesphere.io,resources=s2ibuilders,versions=v1alpha1,name=validating-create-update-s2irun.kubesphere.io
 
-var _ webhook.Validator = &S2iBuilder{}
+var _ webhook.CustomValidator = &S2iBuilder{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *S2iBuilder) ValidateCreate() error {
+func (r *S2iBuilder) ValidateCreate(ctx context.Context, obj runtime.Object) (warnings admission.Warnings, err error) {
 	s2ibuilderlog.Info("validate create", "name", r.Name)
 
 	fromTemplate := false
@@ -83,14 +85,14 @@ func (r *S2iBuilder) ValidateCreate() error {
 		err := kclient.Get(context.TODO(), types.NamespacedName{Name: r.Spec.FromTemplate.Name}, t)
 		if err != nil {
 			if k8serror.IsNotFound(err) {
-				return fmt.Errorf("Template not found, pls check the template name  [%s] or create a template", r.Spec.FromTemplate.Name)
+				return nil, fmt.Errorf("Template not found, pls check the template name  [%s] or create a template", r.Spec.FromTemplate.Name)
 			}
-			return err
+			return nil, err
 		}
 
 		errs := validateParameter(r.Spec.FromTemplate.Parameters, t.Spec.Parameters)
 		if len(errs) != 0 {
-			return errorutil.NewAggregate(errs)
+			return nil, errorutil.NewAggregate(errs)
 		}
 		var BaseImages []string
 		for _, ImageInfo := range t.Spec.ContainerInfo {
@@ -98,7 +100,7 @@ func (r *S2iBuilder) ValidateCreate() error {
 		}
 		if r.Spec.FromTemplate.BuilderImage != "" {
 			if !reflectutils.Contains(r.Spec.FromTemplate.BuilderImage, BaseImages) {
-				return fmt.Errorf("builder's baseImage [%s] not in builder baseImages [%v]",
+				return nil, fmt.Errorf("builder's baseImage [%s] not in builder baseImages [%v]",
 					r.Spec.FromTemplate.BuilderImage, BaseImages)
 			}
 		}
@@ -106,18 +108,18 @@ func (r *S2iBuilder) ValidateCreate() error {
 	}
 	if anno, ok := r.Annotations[AutoScaleAnnotations]; ok {
 		if err := validatingS2iBuilderAutoScale(anno); err != nil {
-			return errors.NewFieldInvalidValueWithReason(AutoScaleAnnotations, err.Error())
+			return nil, errors.NewFieldInvalidValueWithReason(AutoScaleAnnotations, err.Error())
 		}
 	}
 	if errs := validateConfig(r.Spec.Config, fromTemplate); len(errs) == 0 {
-		return nil
+		return nil, nil
 	} else {
-		return errorutil.NewAggregate(errs)
+		return nil, errorutil.NewAggregate(errs)
 	}
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *S2iBuilder) ValidateUpdate(old runtime.Object) error {
+func (r *S2iBuilder) ValidateUpdate(ctx context.Context, oldObj runtime.Object, newObj runtime.Object) (warnings admission.Warnings, err error) {
 	s2ibuilderlog.Info("validate update", "name", r.Name)
 
 	s2ibuilderlog.Info("validate create", "name", r.Name)
@@ -128,14 +130,14 @@ func (r *S2iBuilder) ValidateUpdate(old runtime.Object) error {
 		err := kclient.Get(context.TODO(), types.NamespacedName{Name: r.Spec.FromTemplate.Name}, t)
 		if err != nil {
 			if k8serror.IsNotFound(err) {
-				return fmt.Errorf("Template not found, pls check the template name  [%s] or create a template", r.Spec.FromTemplate.Name)
+				return nil, fmt.Errorf("Template not found, pls check the template name  [%s] or create a template", r.Spec.FromTemplate.Name)
 			}
-			return err
+			return nil, err
 		}
 
 		errs := validateParameter(r.Spec.FromTemplate.Parameters, t.Spec.Parameters)
 		if len(errs) != 0 {
-			return errorutil.NewAggregate(errs)
+			return nil, errorutil.NewAggregate(errs)
 		}
 		var BaseImages []string
 		for _, ImageInfo := range t.Spec.ContainerInfo {
@@ -143,7 +145,7 @@ func (r *S2iBuilder) ValidateUpdate(old runtime.Object) error {
 		}
 		if r.Spec.FromTemplate.BuilderImage != "" {
 			if !reflectutils.Contains(r.Spec.FromTemplate.BuilderImage, BaseImages) {
-				return fmt.Errorf("builder's baseImage [%s] not in builder baseImages [%v]",
+				return nil, fmt.Errorf("builder's baseImage [%s] not in builder baseImages [%v]",
 					r.Spec.FromTemplate.BuilderImage, BaseImages)
 			}
 		}
@@ -151,22 +153,22 @@ func (r *S2iBuilder) ValidateUpdate(old runtime.Object) error {
 	}
 	if anno, ok := r.Annotations[AutoScaleAnnotations]; ok {
 		if err := validatingS2iBuilderAutoScale(anno); err != nil {
-			return errors.NewFieldInvalidValueWithReason(AutoScaleAnnotations, err.Error())
+			return nil, errors.NewFieldInvalidValueWithReason(AutoScaleAnnotations, err.Error())
 		}
 	}
 	if errs := validateConfig(r.Spec.Config, fromTemplate); len(errs) == 0 {
-		return nil
+		return nil, nil
 	} else {
-		return errorutil.NewAggregate(errs)
+		return nil, errorutil.NewAggregate(errs)
 	}
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *S2iBuilder) ValidateDelete() error {
+func (r *S2iBuilder) ValidateDelete(ctx context.Context, obj runtime.Object) (warnings admission.Warnings, err error) {
 	s2ibuilderlog.Info("validate delete", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return nil, nil
 }
 
 // ValidateConfig returns a list of error from validation.

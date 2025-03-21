@@ -1,9 +1,9 @@
 package github
 
 import (
-	"github.com/emicklei/go-restful"
-	"github.com/emicklei/go-restful-openapi"
-	"github.com/google/go-github/github"
+	"github.com/emicklei/go-restful-openapi/v2"
+	"github.com/emicklei/go-restful/v3"
+	"github.com/google/go-github/v69/github"
 )
 
 func (t Trigger) WebService() *restful.WebService {

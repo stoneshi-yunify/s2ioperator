@@ -17,7 +17,7 @@ limitations under the License.
 package handler
 
 import (
-	"github.com/emicklei/go-restful"
+	"github.com/emicklei/go-restful/v3"
 	"github.com/kubesphere/s2ioperator/pkg/handler/general"
 	"github.com/kubesphere/s2ioperator/pkg/handler/github"
 	"net/http"

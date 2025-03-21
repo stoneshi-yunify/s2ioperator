@@ -17,14 +17,16 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/reference"
 	"github.com/kubesphere/s2ioperator/pkg/errors"
 	"github.com/kubesphere/s2ioperator/pkg/util/reflectutils"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // log is for logging in this package.
@@ -42,76 +44,76 @@ func (r *S2iBuilderTemplate) SetupWebhookWithManager(mgr ctrl.Manager) error {
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 // +kubebuilder:webhook:verbs=create;update,path=/validate-devops-kubesphere-io-v1alpha1-s2ibuildertemplate,mutating=false,failurePolicy=fail,groups=devops.kubesphere.io,resources=s2ibuildertemplates,versions=v1alpha1,name=s2ibuildertemplate.kb.io
 
-var _ webhook.Validator = &S2iBuilderTemplate{}
+var _ webhook.CustomValidator = &S2iBuilderTemplate{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *S2iBuilderTemplate) ValidateCreate() error {
+func (r *S2iBuilderTemplate) ValidateCreate(ctx context.Context, obj runtime.Object) (warnings admission.Warnings, err error) {
 	s2ibuildertemplatelog.Info("validate create", "name", r.Name)
 
 	if len(r.Spec.ContainerInfo) == 0 {
-		return errors.NewFieldRequired("baseImages")
+		return nil, errors.NewFieldRequired("baseImages")
 	}
 
 	if r.Spec.DefaultBaseImage == "" {
-		return errors.NewFieldRequired("defaultBaseImage")
+		return nil, errors.NewFieldRequired("defaultBaseImage")
 	}
 	var builderImages []string
 	for _, ImageInfo := range r.Spec.ContainerInfo {
 		builderImages = append(builderImages, ImageInfo.BuilderImage)
 	}
 	if !reflectutils.Contains(r.Spec.DefaultBaseImage, builderImages) {
-		return errors.NewFieldInvalidValueWithReason("defaultBaseImage",
+		return nil, errors.NewFieldInvalidValueWithReason("defaultBaseImage",
 			fmt.Sprintf("defaultBaseImage [%s] should in [%v]", r.Spec.DefaultBaseImage, builderImages))
 	}
 
 	for _, ImageInfo := range r.Spec.ContainerInfo {
 		if err := validateDockerReference(ImageInfo.BuilderImage); err != nil {
-			return errors.NewFieldInvalidValueWithReason("builderImage", err.Error())
+			return nil, errors.NewFieldInvalidValueWithReason("builderImage", err.Error())
 		}
 	}
 	if err := validateDockerReference(r.Spec.DefaultBaseImage); err != nil {
-		return errors.NewFieldInvalidValueWithReason("defaultBaseImage", err.Error())
+		return nil, errors.NewFieldInvalidValueWithReason("defaultBaseImage", err.Error())
 	}
-	return nil
+	return nil, nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *S2iBuilderTemplate) ValidateUpdate(old runtime.Object) error {
+func (r *S2iBuilderTemplate) ValidateUpdate(ctx context.Context, oldObj runtime.Object, newObj runtime.Object) (warnings admission.Warnings, err error) {
 	s2ibuildertemplatelog.Info("validate update", "name", r.Name)
 
 	if len(r.Spec.ContainerInfo) == 0 {
-		return errors.NewFieldRequired("baseImages")
+		return nil, errors.NewFieldRequired("baseImages")
 	}
 
 	if r.Spec.DefaultBaseImage == "" {
-		return errors.NewFieldRequired("defaultBaseImage")
+		return nil, errors.NewFieldRequired("defaultBaseImage")
 	}
 	var builderImages []string
 	for _, ImageInfo := range r.Spec.ContainerInfo {
 		builderImages = append(builderImages, ImageInfo.BuilderImage)
 	}
 	if !reflectutils.Contains(r.Spec.DefaultBaseImage, builderImages) {
-		return errors.NewFieldInvalidValueWithReason("defaultBaseImage",
+		return nil, errors.NewFieldInvalidValueWithReason("defaultBaseImage",
 			fmt.Sprintf("defaultBaseImage [%s] should in [%v]", r.Spec.DefaultBaseImage, builderImages))
 	}
 
 	for _, ImageInfo := range r.Spec.ContainerInfo {
 		if err := validateDockerReference(ImageInfo.BuilderImage); err != nil {
-			return errors.NewFieldInvalidValueWithReason("builderImage", err.Error())
+			return nil, errors.NewFieldInvalidValueWithReason("builderImage", err.Error())
 		}
 	}
 	if err := validateDockerReference(r.Spec.DefaultBaseImage); err != nil {
-		return errors.NewFieldInvalidValueWithReason("defaultBaseImage", err.Error())
+		return nil, errors.NewFieldInvalidValueWithReason("defaultBaseImage", err.Error())
 	}
-	return nil
+	return nil, nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *S2iBuilderTemplate) ValidateDelete() error {
+func (r *S2iBuilderTemplate) ValidateDelete(ctx context.Context, obj runtime.Object) (warnings admission.Warnings, err error) {
 	s2ibuildertemplatelog.Info("validate delete", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return nil, nil
 }
 
 func validateDockerReference(ref string) error {

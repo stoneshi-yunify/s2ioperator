@@ -225,7 +225,7 @@ func (r *ReconcileS2iRun) GenerateNewJob(instance *devopsv1alpha1.S2iRun) (*batc
 	return job, nil
 }
 
-//setDockerSecret setS2iConfig docker secret
+// setDockerSecret setS2iConfig docker secret
 func (r *ReconcileS2iRun) setDockerSecret(instance *devopsv1alpha1.S2iRun, config *devopsv1alpha1.S2iConfig) error {
 	if config.PushAuthentication != nil && config.PushAuthentication.SecretRef != nil {
 		secret := &corev1.Secret{}
@@ -411,7 +411,7 @@ func setConfigMapLabelAnnotations(instance *devopsv1alpha1.S2iRun, config devops
 	}
 }
 
-//setGitSecret set GitClone Secret
+// setGitSecret set GitClone Secret
 func (r *ReconcileS2iRun) setGitSecret(instance *devopsv1alpha1.S2iRun, config *devopsv1alpha1.S2iConfig) error {
 	if config.GitSecretRef != nil {
 		secret := &corev1.Secret{}

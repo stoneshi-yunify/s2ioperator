@@ -68,41 +68,40 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to S2iBuilder
-	err = c.Watch(&source.Kind{Type: &devopsv1alpha1.S2iBuilder{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(source.Kind(mgr.GetCache(), &devopsv1alpha1.S2iBuilder{}, &handler.TypedEnqueueRequestForObject[*devopsv1alpha1.S2iBuilder]{}))
 	if err != nil {
 		return err
 	}
 
 	//watch s2irun
-	var mapFn handler.MapFunc = func(o client.Object) []reconcile.Request {
-		run := o.(*devopsv1alpha1.S2iRun)
+	var mapFn = func(ctx context.Context, run *devopsv1alpha1.S2iRun) []reconcile.Request {
 		return []reconcile.Request{
 			{NamespacedName: client.ObjectKey{
 				Name:      run.Spec.BuilderName,
-				Namespace: o.GetNamespace(),
+				Namespace: run.GetNamespace(),
 			}},
 		}
 	}
 
 	// 'UpdateFunc' and 'CreateFunc' used to judge if a event about the object is
 	// what we want. If that is true, the event will be processed by the reconciler.
-	p := predicate.Funcs{
-		UpdateFunc: func(e event.UpdateEvent) bool {
-			run := e.ObjectOld.(*devopsv1alpha1.S2iRun)
+	p := predicate.TypedFuncs[*devopsv1alpha1.S2iRun]{
+		UpdateFunc: func(e event.TypedUpdateEvent[*devopsv1alpha1.S2iRun]) bool {
+			run := e.ObjectOld
 			if run.Spec.BuilderName == "" {
 				return false
 			}
 			return e.ObjectOld != e.ObjectNew
 		},
-		CreateFunc: func(e event.CreateEvent) bool {
-			run := e.Object.(*devopsv1alpha1.S2iRun)
+		CreateFunc: func(e event.TypedCreateEvent[*devopsv1alpha1.S2iRun]) bool {
+			run := e.Object
 			if run.Spec.BuilderName == "" {
 				return false
 			}
 			return true
 		},
 	}
-	err = c.Watch(&source.Kind{Type: &devopsv1alpha1.S2iRun{}}, handler.EnqueueRequestsFromMapFunc(mapFn), p)
+	err = c.Watch(source.Kind(mgr.GetCache(), &devopsv1alpha1.S2iRun{}, handler.TypedEnqueueRequestsFromMapFunc(mapFn), p))
 
 	if err != nil {
 		return err

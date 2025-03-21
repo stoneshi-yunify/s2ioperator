@@ -2,11 +2,11 @@ package general
 
 import (
 	"context"
-	"github.com/emicklei/go-restful"
+	"github.com/emicklei/go-restful/v3"
 	devopsv1alpha1 "github.com/kubesphere/s2ioperator/pkg/apis/devops/v1alpha1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

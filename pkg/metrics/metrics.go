@@ -5,7 +5,7 @@ import (
 	devopsv1alpha1 "github.com/kubesphere/s2ioperator/pkg/apis/devops/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/api/core/v1"
-	log "k8s.io/klog"
+	log "k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 	"time"

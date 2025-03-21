@@ -43,7 +43,7 @@ deploy: manifests update-cert kustomize
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
-	$(CONTROLLER_GEN) crd:trivialVersions=true rbac:roleName=manager-role paths="./pkg/apis/...;./pkg/controller/..." output:crd:artifacts:config=config/crds
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd paths="./pkg/apis/...;./pkg/controller/..." output:crd:artifacts:config=config/crds
 
 # Run go fmt against code
 fmt:
@@ -94,15 +94,15 @@ update-cert: ca-secret
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.6.2)
+	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.17.2)
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 kustomize: ## Download kustomize locally if necessary.
-	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v3@v3.8.7)
+	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5)
 
 OPENAPI_GEN = $(shell pwd)/bin/openapi-gen
 openapi-gen: ## Download openapi-gen locally if necessary
-	$(call go-get-tool,$(OPENAPI_GEN),k8s.io/code-generator/cmd/openapi-gen@v0.22.3)
+	$(call go-get-tool,$(OPENAPI_GEN),k8s.io/code-generator/cmd/openapi-gen@v0.29.15)
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))

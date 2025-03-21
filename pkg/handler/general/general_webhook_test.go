@@ -2,8 +2,8 @@ package general
 
 import (
 	"context"
-	"github.com/emicklei/go-restful"
-	"github.com/emicklei/go-restful-openapi"
+	"github.com/emicklei/go-restful-openapi/v2"
+	"github.com/emicklei/go-restful/v3"
 	devopsv1alpha1 "github.com/kubesphere/s2ioperator/pkg/apis/devops/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

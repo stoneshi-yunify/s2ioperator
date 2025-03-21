@@ -26,11 +26,13 @@ import (
 	"github.com/kubesphere/s2ioperator/pkg/handler"
 	"github.com/kubesphere/s2ioperator/pkg/metrics"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/klog/klogr"
+	"k8s.io/klog/v2/klogr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 func init() {
@@ -56,11 +58,14 @@ func main() {
 	// Create a newgo Cmd to provide shared dependencies and start components
 	log.Info("setting up manager")
 	mgr, err := manager.New(cfg, manager.Options{
-		MetricsBindAddress: metricsAddr,
-		// We have to set the port to 443 for consistency, because the default port value has been changed
-		// from 443 to 9443 after controller-runtime 0.7.0
-		// Please see also https://github.com/kubernetes-sigs/controller-runtime/releases/tag/v0.7.0
-		Port: 443,
+		Metrics: metricsserver.Options{
+			BindAddress: metricsAddr,
+		},
+		WebhookServer: &webhook.DefaultServer{
+			Options: webhook.Options{
+				Port: 443,
+			},
+		},
 	})
 	if err != nil {
 		log.Error(err, "unable to set up overall controller manager")

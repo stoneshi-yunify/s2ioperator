@@ -82,22 +82,18 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to S2iRun
-	err = c.Watch(&source.Kind{Type: &devopsv1alpha1.S2iRun{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(source.Kind(mgr.GetCache(), &devopsv1alpha1.S2iRun{}, &handler.TypedEnqueueRequestForObject[*devopsv1alpha1.S2iRun]{}))
 	if err != nil {
 		return err
 	}
 
-	err = c.Watch(&source.Kind{Type: &batchv1.Job{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &devopsv1alpha1.S2iRun{},
-	})
+	err = c.Watch(source.Kind(mgr.GetCache(), &batchv1.Job{},
+		handler.TypedEnqueueRequestForOwner[*batchv1.Job](mgr.GetScheme(), mgr.GetRESTMapper(), &devopsv1alpha1.S2iRun{}, handler.OnlyControllerOwner())))
 	if err != nil {
 		return err
 	}
-	err = c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &devopsv1alpha1.S2iRun{},
-	})
+	err = c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{},
+		handler.TypedEnqueueRequestForOwner[*corev1.ConfigMap](mgr.GetScheme(), mgr.GetRESTMapper(), &devopsv1alpha1.S2iRun{}, handler.OnlyControllerOwner())))
 	if err != nil {
 		return err
 	}

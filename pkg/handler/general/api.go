@@ -1,8 +1,8 @@
 package general
 
 import (
-	"github.com/emicklei/go-restful"
-	"github.com/emicklei/go-restful-openapi"
+	"github.com/emicklei/go-restful-openapi/v2"
+	"github.com/emicklei/go-restful/v3"
 )
 
 var tags = []string{"s2i_general_trigger"}

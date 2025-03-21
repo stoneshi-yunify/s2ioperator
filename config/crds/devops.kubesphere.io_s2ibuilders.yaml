@@ -1,11 +1,9 @@
-
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.2
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.17.2
   name: s2ibuilders.devops.kubesphere.io
 spec:
   group: devops.kubesphere.io
@@ -37,14 +35,19 @@ spec:
         description: S2iBuilder is the Schema for the s2ibuilders API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -52,8 +55,9 @@ spec:
             description: S2iBuilderSpec defines the desired state of S2iBuilder
             properties:
               config:
-                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                  Important: Run "make" to regenerate code after modifying this file'
+                description: |-
+                  INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                  Important: Run "make" to regenerate code after modifying this file
                 properties:
                   addHost:
                     description: AddHost Add a line to /etc/hosts for test purpose
@@ -63,27 +67,29 @@ spec:
                       type: string
                     type: array
                   asDockerfile:
-                    description: AsDockerfile indicates the path where the Dockerfile
-                      should be written instead of building a new image.
+                    description: |-
+                      AsDockerfile indicates the path where the Dockerfile should be written instead of building
+                      a new image.
                     type: string
                   assembleUser:
                     description: AssembleUser specifies the user to run the assemble
                       script in container
                     type: string
                   blockOnBuild:
-                    description: BlockOnBuild prevents s2i from performing a docker
-                      build operation if one is necessary to execute ONBUILD commands,
-                      or to layer source code into the container for images that don't
-                      have a tar binary available, if the image contains ONBUILD commands
-                      that would be executed.
+                    description: |-
+                      BlockOnBuild prevents s2i from performing a docker build operation
+                      if one is necessary to execute ONBUILD commands, or to layer source code into
+                      the container for images that don't have a tar binary available, if the
+                      image contains ONBUILD commands that would be executed.
                     type: boolean
                   branchExpression:
                     description: Regular expressions, ignoring names that do not match
                       the provided regular expression
                     type: string
                   buildVolumes:
-                    description: BuildVolumes specifies a list of volumes to mount
-                      to container running the build.
+                    description: |-
+                      BuildVolumes specifies a list of volumes to mount to container running the
+                      build.
                     items:
                       type: string
                     type: array
@@ -108,8 +114,9 @@ spec:
                       build to inform about that fact.
                     type: string
                   cgroupLimits:
-                    description: CGroupLimits describes the cgroups limits that will
-                      be applied to any containers run by s2i.
+                    description: |-
+                      CGroupLimits describes the cgroups limits that will be applied to any containers
+                      run by s2i.
                     properties:
                       cpuPeriod:
                         format: int64
@@ -137,20 +144,23 @@ spec:
                     - parent
                     type: object
                   contextDir:
-                    description: Specify a relative directory inside the application
-                      repository that should be used as a root directory for the application.
+                    description: |-
+                      Specify a relative directory inside the application repository that should
+                      be used as a root directory for the application.
                     type: string
                   description:
-                    description: Description is a result image description label.
-                      The default is no description.
+                    description: |-
+                      Description is a result image description label. The default is no
+                      description.
                     type: string
                   destination:
                     description: Destination specifies a location where the untar
                       operation will place its artifacts.
                     type: string
                   displayName:
-                    description: DisplayName is a result image display-name label.
-                      This defaults to the output image name.
+                    description: |-
+                      DisplayName is a result image display-name label. This defaults to the
+                      output image name.
                     type: string
                   dockerConfig:
                     description: DockerConfig describes how to access host docker
@@ -185,9 +195,9 @@ spec:
                     - useTLS
                     type: object
                   dockerNetworkMode:
-                    description: DockerNetworkMode is used to set the docker network
-                      setting to --net=container:<id> when the builder is invoked
-                      from a container.
+                    description: |-
+                      DockerNetworkMode is used to set the docker network setting to --net=container:<id>
+                      when the builder is invoked from a container.
                     type: string
                   dropCapabilities:
                     description: DropCapabilities contains a list of capabilities
@@ -212,9 +222,9 @@ spec:
                       type: object
                     type: array
                   excludeRegExp:
-                    description: ExcludeRegExp contains a string representation of
-                      the regular expression desired for deciding which files to exclude
-                      from the tar stream
+                    description: |-
+                      ExcludeRegExp contains a string representation of the regular expression desired for
+                      deciding which files to exclude from the tar stream
                     type: string
                   export:
                     description: Export Push the result image to specify image registry
@@ -224,10 +234,16 @@ spec:
                     description: GitSecretRef is the BasicAuth Secret of Git Clone
                     properties:
                       name:
-                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        default: ""
+                        description: |-
+                          Name of the referent.
+                          This field is effectively required, but due to backwards compatibility is
+                          allowed to be empty. Instances of this type with an empty value here are
+                          almost certainly wrong.
+                          More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                         type: string
                     type: object
+                    x-kubernetes-map-type: atomic
                   hasOnBuild:
                     description: HasOnBuild will be set to true if the builder image
                       contains ONBUILD instructions
@@ -237,10 +253,9 @@ spec:
                       tag should set by field tag alone
                     type: string
                   imageScriptsUrl:
-                    description: ImageScriptsURL is the default location to find the
-                      assemble/run scripts for a builder image. This url can be a
-                      reference within the builder image if the scheme is specified
-                      as image://
+                    description: |-
+                      ImageScriptsURL is the default location to find the assemble/run scripts for a builder image.
+                      This url can be a reference within the builder image if the scheme is specified as image://
                     type: string
                   imageWorkDir:
                     description: ImageWorkDir is the default working directory for
@@ -251,37 +266,45 @@ spec:
                       build.
                     type: boolean
                   incrementalAuthentication:
-                    description: IncrementalAuthentication holds the authentication
-                      information for pulling the previous image from private repositories
+                    description: |-
+                      IncrementalAuthentication holds the authentication information for pulling the
+                      previous image from private repositories
                     properties:
                       email:
                         type: string
                       password:
                         type: string
                       secretRef:
-                        description: LocalObjectReference contains enough information
-                          to let you locate the referenced object inside the same
-                          namespace.
+                        description: |-
+                          LocalObjectReference contains enough information to let you locate the
+                          referenced object inside the same namespace.
                         properties:
                           name:
-                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            default: ""
+                            description: |-
+                              Name of the referent.
+                              This field is effectively required, but due to backwards compatibility is
+                              allowed to be empty. Instances of this type with an empty value here are
+                              almost certainly wrong.
+                              More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                             type: string
                         type: object
+                        x-kubernetes-map-type: atomic
                       serverAddress:
                         type: string
                       username:
                         type: string
                     type: object
                   incrementalFromTag:
-                    description: IncrementalFromTag sets an alternative image tag
-                      to look for existing artifacts. Tag is used by default if this
-                      is not set.
+                    description: |-
+                      IncrementalFromTag sets an alternative image tag to look for existing
+                      artifacts. Tag is used by default if this is not set.
                     type: string
                   injections:
-                    description: Injections specifies a list source/destination folders
-                      that are injected to the container that runs assemble. All files
-                      we inject will be truncated after the assemble script finishes.
+                    description: |-
+                      Injections specifies a list source/destination folders that are injected to
+                      the container that runs assemble.
+                      All files we inject will be truncated after the assemble script finishes.
                     items:
                       description: VolumeSpec represents a single volume mount point.
                       properties:
@@ -299,13 +322,14 @@ spec:
                       type: object
                     type: array
                   isBinaryURL:
-                    description: IsBinaryURL explain the type of SourceURL. If it
-                      is IsBinaryURL, it will download the file directly without using
-                      git.
+                    description: |-
+                      IsBinaryURL explain the type of SourceURL.
+                      If it is IsBinaryURL, it will download the file directly without using git.
                     type: boolean
                   keepSymlinks:
-                    description: KeepSymlinks indicates to copy symlinks as symlinks.
-                      Default behavior is to follow symlinks and copy files by content.
+                    description: |-
+                      KeepSymlinks indicates to copy symlinks as symlinks. Default behavior is to follow
+                      symlinks and copy files by content.
                     type: boolean
                   labelNamespace:
                     description: LabelNamespace provides the namespace under which
@@ -314,10 +338,10 @@ spec:
                   labels:
                     additionalProperties:
                       type: string
-                    description: Labels specify labels and their values to be applied
-                      to the resulting image. Label keys must have non-zero length.
-                      The labels defined here override generated labels in case they
-                      have the same name.
+                    description: |-
+                      Labels specify labels and their values to be applied to the resulting image. Label keys
+                      must have non-zero length. The labels defined here override generated labels in case
+                      they have the same name.
                     type: object
                   layeredBuild:
                     description: LayeredBuild describes if this is build which layered
@@ -343,78 +367,94 @@ spec:
                       should be left after processing.
                     type: boolean
                   previousImagePullPolicy:
-                    description: PreviousImagePullPolicy specifies when to pull the
-                      previously build image when doing incremental build
+                    description: |-
+                      PreviousImagePullPolicy specifies when to pull the previously build image
+                      when doing incremental build
                     type: string
                   pullAuthentication:
-                    description: PullAuthentication holds the authentication information
-                      for pulling the Docker images from private repositories
+                    description: |-
+                      PullAuthentication holds the authentication information for pulling the
+                      Docker images from private repositories
                     properties:
                       email:
                         type: string
                       password:
                         type: string
                       secretRef:
-                        description: LocalObjectReference contains enough information
-                          to let you locate the referenced object inside the same
-                          namespace.
+                        description: |-
+                          LocalObjectReference contains enough information to let you locate the
+                          referenced object inside the same namespace.
                         properties:
                           name:
-                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            default: ""
+                            description: |-
+                              Name of the referent.
+                              This field is effectively required, but due to backwards compatibility is
+                              allowed to be empty. Instances of this type with an empty value here are
+                              almost certainly wrong.
+                              More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                             type: string
                         type: object
+                        x-kubernetes-map-type: atomic
                       serverAddress:
                         type: string
                       username:
                         type: string
                     type: object
                   pushAuthentication:
-                    description: PullAuthentication holds the authentication information
-                      for pulling the Docker images from private repositories
+                    description: |-
+                      PullAuthentication holds the authentication information for pulling the
+                      Docker images from private repositories
                     properties:
                       email:
                         type: string
                       password:
                         type: string
                       secretRef:
-                        description: LocalObjectReference contains enough information
-                          to let you locate the referenced object inside the same
-                          namespace.
+                        description: |-
+                          LocalObjectReference contains enough information to let you locate the
+                          referenced object inside the same namespace.
                         properties:
                           name:
-                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            default: ""
+                            description: |-
+                              Name of the referent.
+                              This field is effectively required, but due to backwards compatibility is
+                              allowed to be empty. Instances of this type with an empty value here are
+                              almost certainly wrong.
+                              More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                             type: string
                         type: object
+                        x-kubernetes-map-type: atomic
                       serverAddress:
                         type: string
                       username:
                         type: string
                     type: object
                   removePreviousImage:
-                    description: RemovePreviousImage describes if previous image should
-                      be removed after successful build. This applies only to incremental
-                      builds.
+                    description: |-
+                      RemovePreviousImage describes if previous image should be removed after successful build.
+                      This applies only to incremental builds.
                     type: boolean
                   revisionId:
                     description: The RevisionId is a branch name or a SHA-1 hash of
                       every important thing about the commit
                     type: string
                   runImage:
-                    description: RunImage will trigger a "docker run ..." invocation
-                      of the produced image so the user can see if it operates as
-                      he would expect
+                    description: |-
+                      RunImage will trigger a "docker run ..." invocation of the produced image so the user
+                      can see if it operates as he would expect
                     type: boolean
                   runtimeArtifacts:
-                    description: RuntimeArtifacts specifies a list of source/destination
-                      pairs that will be copied from builder to a runtime image. Source
-                      can be a file or directory. Destination must be a directory.
-                      Regardless whether it is an absolute or relative path, it will
-                      be placed into image's WORKDIR. Destination also can be empty
-                      or equals to ".", in this case it just refers to a root of WORKDIR.
-                      In case it's empty, S2I will try to get this list from io.openshift.s2i.assemble-input-files
-                      label on a RuntimeImage.
+                    description: |-
+                      RuntimeArtifacts specifies a list of source/destination pairs that will
+                      be copied from builder to a runtime image. Source can be a file or
+                      directory. Destination must be a directory. Regardless whether it
+                      is an absolute or relative path, it will be placed into image's WORKDIR.
+                      Destination also can be empty or equals to ".", in this case it just
+                      refers to a root of WORKDIR.
+                      In case it's empty, S2I will try to get this list from
+                      io.openshift.s2i.assemble-input-files label on a RuntimeImage.
                     items:
                       description: VolumeSpec represents a single volume mount point.
                       properties:
@@ -432,41 +472,49 @@ spec:
                       type: object
                     type: array
                   runtimeAuthentication:
-                    description: RuntimeAuthentication holds the authentication information
-                      for pulling the runtime Docker images from private repositories.
+                    description: |-
+                      RuntimeAuthentication holds the authentication information for pulling the
+                      runtime Docker images from private repositories.
                     properties:
                       email:
                         type: string
                       password:
                         type: string
                       secretRef:
-                        description: LocalObjectReference contains enough information
-                          to let you locate the referenced object inside the same
-                          namespace.
+                        description: |-
+                          LocalObjectReference contains enough information to let you locate the
+                          referenced object inside the same namespace.
                         properties:
                           name:
-                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            default: ""
+                            description: |-
+                              Name of the referent.
+                              This field is effectively required, but due to backwards compatibility is
+                              allowed to be empty. Instances of this type with an empty value here are
+                              almost certainly wrong.
+                              More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                             type: string
                         type: object
+                        x-kubernetes-map-type: atomic
                       serverAddress:
                         type: string
                       username:
                         type: string
                     type: object
                   runtimeImage:
-                    description: RuntimeImage specifies the image that will be a base
-                      for resulting image and will be used for running an application.
-                      By default, BuilderImage is used for building and running, but
-                      the latter may be overridden.
+                    description: |-
+                      RuntimeImage specifies the image that will be a base for resulting image
+                      and will be used for running an application. By default, BuilderImage is
+                      used for building and running, but the latter may be overridden.
                     type: string
                   runtimeImagePullPolicy:
                     description: RuntimeImagePullPolicy specifies when to pull a runtime
                       image.
                     type: string
                   scriptDownloadProxyConfig:
-                    description: ScriptDownloadProxyConfig optionally specifies the
-                      http and https proxy to use when downloading scripts
+                    description: |-
+                      ScriptDownloadProxyConfig optionally specifies the http and https proxy
+                      to use when downloading scripts
                     properties:
                       httpProxy:
                         type: string
@@ -474,9 +522,9 @@ spec:
                         type: string
                     type: object
                   scriptsUrl:
-                    description: ScriptsURL is a URL describing where to fetch the
-                      S2I scripts from during build process. This url can be a reference
-                      within the builder image if the scheme is specified as image://
+                    description: |-
+                      ScriptsURL is a URL describing where to fetch the S2I scripts from during build process.
+                      This url can be a reference within the builder image if the scheme is specified as image://
                     type: string
                   secretCode:
                     description: SecretCode
@@ -505,9 +553,9 @@ spec:
                       downloading sources, scripts and tar operations.
                     type: string
                   workingSourceDir:
-                    description: WorkingSourceDir describes the subdirectory off of
-                      WorkingDir set up during the repo download that is later used
-                      as the root for ignore processing
+                    description: |-
+                      WorkingSourceDir describes the subdirectory off of WorkingDir set up during the repo download
+                      that is later used as the root for ignore processing
                     type: string
                 required:
                 - imageName
@@ -576,9 +624,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []

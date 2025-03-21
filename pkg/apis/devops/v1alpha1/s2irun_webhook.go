@@ -28,6 +28,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // log is for logging in this package.
@@ -48,78 +49,78 @@ func (r *S2iRun) SetupWebhookWithManager(mgr ctrl.Manager) error {
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 // +kubebuilder:webhook:verbs=create;update,path=/validate-devops-kubesphere-io-v1alpha1-s2irun,mutating=false,failurePolicy=fail,groups=devops.kubesphere.io,resources=s2iruns,versions=v1alpha1,name=vs2irun.kb.io
 
-var _ webhook.Validator = &S2iRun{}
+var _ webhook.CustomValidator = &S2iRun{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *S2iRun) ValidateCreate() error {
+func (r *S2iRun) ValidateCreate(ctx context.Context, obj runtime.Object) (warnings admission.Warnings, err error) {
 	s2irunlog.Info("validate create", "name", r.Name)
 
 	origin := &S2iRun{}
 
 	builder := &S2iBuilder{}
 
-	err := kclient.Get(context.TODO(), types.NamespacedName{Namespace: r.Namespace, Name: r.Spec.BuilderName}, builder)
+	err = kclient.Get(context.TODO(), types.NamespacedName{Namespace: r.Namespace, Name: r.Spec.BuilderName}, builder)
 	if err != nil && !k8serror.IsNotFound(err) {
-		return errors.NewFieldInvalidValueWithReason("no", "could not call k8s api")
+		return nil, errors.NewFieldInvalidValueWithReason("no", "could not call k8s api")
 	}
 	if !k8serror.IsNotFound(err) {
 		if r.Spec.NewSourceURL != "" && !builder.Spec.Config.IsBinaryURL {
-			return errors.NewFieldInvalidValueWithReason("newSourceURL", "only b2i could set newSourceURL")
+			return nil, errors.NewFieldInvalidValueWithReason("newSourceURL", "only b2i could set newSourceURL")
 		}
 	}
 
 	err = kclient.Get(context.TODO(), types.NamespacedName{Namespace: r.Namespace, Name: r.Name}, origin)
 	if !k8serror.IsNotFound(err) && origin.Status.RunState != "" && !reflect.DeepEqual(origin.Spec, r.Spec) {
-		return errors.NewFieldInvalidValueWithReason("spec", "should not change s2i run spec when job started")
+		return nil, errors.NewFieldInvalidValueWithReason("spec", "should not change s2i run spec when job started")
 	}
 
 	if r.Spec.NewTag != "" {
 		validateImageName := fmt.Sprintf("validate:%s", r.Spec.NewTag)
 		if err := validateDockerReference(validateImageName); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *S2iRun) ValidateUpdate(old runtime.Object) error {
+func (r *S2iRun) ValidateUpdate(ctx context.Context, oldObj runtime.Object, newObj runtime.Object) (warnings admission.Warnings, err error) {
 	s2irunlog.Info("validate update", "name", r.Name)
 
 	origin := &S2iRun{}
 
 	builder := &S2iBuilder{}
 
-	err := kclient.Get(context.TODO(), types.NamespacedName{Namespace: r.Namespace, Name: r.Spec.BuilderName}, builder)
+	err = kclient.Get(context.TODO(), types.NamespacedName{Namespace: r.Namespace, Name: r.Spec.BuilderName}, builder)
 	if err != nil && !k8serror.IsNotFound(err) {
-		return errors.NewFieldInvalidValueWithReason("no", "could not call k8s api")
+		return nil, errors.NewFieldInvalidValueWithReason("no", "could not call k8s api")
 	}
 	if !k8serror.IsNotFound(err) {
 		if r.Spec.NewSourceURL != "" && !builder.Spec.Config.IsBinaryURL {
-			return errors.NewFieldInvalidValueWithReason("newSourceURL", "only b2i could set newSourceURL")
+			return nil, errors.NewFieldInvalidValueWithReason("newSourceURL", "only b2i could set newSourceURL")
 		}
 	}
 
 	err = kclient.Get(context.TODO(), types.NamespacedName{Namespace: r.Namespace, Name: r.Name}, origin)
 	if !k8serror.IsNotFound(err) && origin.Status.RunState != "" && !reflect.DeepEqual(origin.Spec, r.Spec) {
-		return errors.NewFieldInvalidValueWithReason("spec", "should not change s2i run spec when job started")
+		return nil, errors.NewFieldInvalidValueWithReason("spec", "should not change s2i run spec when job started")
 	}
 
 	if r.Spec.NewTag != "" {
 		validateImageName := fmt.Sprintf("validate:%s", r.Spec.NewTag)
 		if err := validateDockerReference(validateImageName); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *S2iRun) ValidateDelete() error {
+func (r *S2iRun) ValidateDelete(ctx context.Context, obj runtime.Object) (warnings admission.Warnings, err error) {
 	s2irunlog.Info("validate delete", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return nil, nil
 }
